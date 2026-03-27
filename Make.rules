@@ -66,6 +66,8 @@ else
 	$(HIDE)$(CC) $(LDFLAGS) $(SUBSYSTEM_DEFINES) $< -o $@ $(LOADLIBES)
 endif
 
+
+# For Original C
 %.o: %.c
 	@$(ECHO) "  CC       $(notdir $@)"
 	$(HIDE)$(CC) $(INCDIR) $(CFLAGS) -c $< -o $@
@@ -77,6 +79,11 @@ endif
 %.i: %.c
 	@$(ECHO) "  CPP      $(notdir $@)"
 	$(HIDE)$(CC) $(INCDIR) $(CFLAGS) -E $< -o $@
+
+# For C++
+%.o : %.cc
+	@$(ECHO) "  CXX       $(notdir $@)"
+	$(HIDE)$(CXX) $(INCDIR) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.S
 	@$(ECHO) "  AS       $(notdir $@)"

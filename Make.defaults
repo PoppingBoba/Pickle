@@ -52,7 +52,8 @@ endif
 
 EFI_CFLAGS := 
 USER_CFLAGS := $(CFLAGS)
-override CFLAGS = $(EFI_CFLAGS) $(USER_CFLAGS)
+override CFLAGS = $(EFI_CFLAGS) $(EFI_CONLYFLAGS) $(USER_CFLAGS)
+override CXXFLAGS = $(EFI_CFLAGS) $(EFI_CPPONLYFLAGS) $(USER_CFLAGS)
 EFI_LDFLAGS := 
 USER_LDFLAGS := $(LDFLAGS)
 override LDFLAGS = $(EFI_LDFLAGS) $(USER_LDFLAGS)
@@ -80,6 +81,38 @@ LD           := $(prefix)$(CROSS_COMPILE)ld
 AR           := $(prefix)$(CROSS_COMPILE)ar
 RANLIB       := $(prefix)$(CROSS_COMPILE)ranlib
 OBJCOPY      := $(prefix)$(CROSS_COMPILE)objcopy
+
+# !!!!!!!!!!!!!!!! For Clang !!!!!!!!!!!!!!!!!!
+TARGET=--target=x86_64-none-elf
+
+ifeq ($(LLVM),1)
+  CC      := clang
+  CXX     := clang++
+  AS      := clang -x assembler-with-cpp
+  LD      := ld.lld
+  AR      := llvm-ar
+  NM      := llvm-nm
+  OBJCOPY := llvm-objcopy
+  OBJDUMP := llvm-objdump
+  STRIP   := llvm-strip
+  RANLIB  := llvm-ranlib
+  SIZE    := llvm-size
+  CPPFILT := llvm-cxxfilt
+else ifneq (, $(findstring /, $(LLVM)))
+  CC      := $(LLVM)clang $(TARGET)
+  CXX     := $(LLVM)clang++ $(TARGET)
+  AS      := $(LLVM)clang $(TARGET) -x assembler-with-cpp
+  LD      := $(LLVM)ld.lld
+  AR      := $(LLVM)llvm-ar
+  NM      := $(LLVM)llvm-nm
+  OBJCOPY := $(LLVM)llvm-objcopy
+  OBJDUMP := $(LLVM)llvm-objdump
+  STRIP   := $(LLVM)llvm-strip
+  RANLIB  := $(LLVM)llvm-ranlib
+  SIZE    := $(LLVM)llvm-size
+  CPPFILT := $(LLVM)llvm-cxxfilt
+endif
+# !!!!!!!!!!!!!!!! For Clang !!!!!!!!!!!!!!!!!!
 
 # Set verbose or nonverbose output similarly to automake's silent rules.
 # Default is nonverbose, but, just like with automake, it can be disabled
@@ -175,7 +208,9 @@ ifeq ($(ARCH),ia32)
 endif
 
 # Set ISO C mode
-EFI_CFLAGS += -std=c11
+EFI_CONLYFLAGS += -std=c11
+
+EFI_CPPONLYFLAGS += -std=c++17 -fshort-wchar
 
 ifeq ($(ARCH),x86_64)
   ifeq ($(GCCNEWENOUGH),1)
