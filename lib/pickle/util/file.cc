@@ -82,7 +82,7 @@ File::ReadFile(
     );
     if (EFI_ERROR(status))
     {
-        Print(W("Failed to Open Root... Fuck [%r]\n"), status);
+        Print(W("Failed to Open Root... [%r]\n"), status);
         goto done;
     }
 
