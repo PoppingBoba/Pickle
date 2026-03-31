@@ -47,6 +47,8 @@ FILES = boxdraw smbios console crc data debug dpath \
         $(ARCH)/initplat $(ARCH)/math $(ARCH)/setjmp \
         ctors print ms_va_print va_print
 
+FILES += pickle/elf pickle/util/file
+
 ifeq ($(ARCH),ia64)
 FILES += $(ARCH)/salpal $(ARCH)/palproc
 endif
@@ -63,6 +65,8 @@ endif
 OBJS  = $(FILES:%=%.o)
 
 SUBDIRS = ia32 x86_64 ia64 aarch64 arm mips64el riscv64 loongarch64 runtime
+
+SUBDIRS += pickle pickle/util
 
 all:	libefi.a
 

@@ -5,3 +5,5 @@
 *.so
 *.tar.*
 *.tar
+x86_64/
+lib/ms_va_print.c

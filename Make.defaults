@@ -210,7 +210,7 @@ endif
 # Set ISO C mode
 EFI_CONLYFLAGS += -std=c11
 
-EFI_CPPONLYFLAGS += -std=c++17 -fshort-wchar
+EFI_CPPONLYFLAGS += -std=c++17 -fshort-wchar -fno-rtti
 
 ifeq ($(ARCH),x86_64)
   ifeq ($(GCCNEWENOUGH),1)

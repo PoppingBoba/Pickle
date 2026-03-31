@@ -82,8 +82,16 @@ endif
 
 # For C++
 %.o : %.cc
-	@$(ECHO) "  CXX       $(notdir $@)"
+	@$(ECHO) "  CXX      $(notdir $@)"
 	$(HIDE)$(CXX) $(INCDIR) $(CXXFLAGS) -c $< -o $@
+
+%.s: %.cc
+	@$(ECHO) "  CXX      $(notdir $@)"
+	$(HIDE)$(CXX) $(INCDIR) $(CXXFLAGS) -S $< -o $@
+
+%.i: %.cc
+	@$(ECHO) "  CXXPP    $(notdir $@)"
+	$(HIDE)$(CXX) $(INCDIR) $(CXXFLAGS) -E $< -o $@
 
 %.o: %.S
 	@$(ECHO) "  AS       $(notdir $@)"
