@@ -18,29 +18,38 @@ void pickleTest(EFI_HANDLE ImageHandle)
 {
     EFI_STATUS status = EFI_SUCCESS;
 
-    VOID* Data;
-    UINTN DataSize;
+    // VOID* Data;
+    // UINTN DataSize;
 
     Pickle::util::File picklefile;
-    
-    picklefile.Initialize();
 
-    status = picklefile.ReadFile(
+    status = picklefile.Open(
         ImageHandle,
-        W("\\test.txt"),
-        &Data,
-        &DataSize
+        W("\\test.txt")
     );
+    if (EFI_ERROR(status))
+    {
+        Print(W("Failed to Open File... [%r]\n"), status);
+    }
+    else
+    {
+        Print(W("Open Success\r\n"));
+    }
+
+    UINTN size = 30;
+    Pickle::util::DynamicArray<UINT8> data;
+
+    status = picklefile.Read(data, size);
     if (EFI_ERROR(status))
     {
         Print(W("Failed to Read File... [%r]\n"), status);
     }
-    else
+
+    for (UINTN i = 0; i < size; i++)
     {
-        Print(W("File Size: %lu\n"), DataSize);
+        Print(W("Read Test [%d] : %c \r\n"), i, data.Data()[i]);
     }
 
-    picklefile.Uninitialize();
 }
 
 EFI_STATUS

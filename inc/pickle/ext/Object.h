@@ -6,6 +6,10 @@
 namespace Pickle::ext 
 {
 
+#define PickleDeclareCtorAndDtor(_class)    \
+    _class() { Initialize(); };             \
+    ~_class() { Uninitialize(); }
+
 struct Object
 {
     virtual void Initialize() = 0;
