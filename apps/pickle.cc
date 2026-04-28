@@ -8,7 +8,7 @@
 extern "C"
 {
 
-// For C
+// For No mangling function declaration
 EFI_STATUS
 efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable);
 
@@ -45,9 +45,9 @@ void pickleTest(EFI_HANDLE ImageHandle)
         Print(W("Failed to Read File... [%r]\n"), status);
     }
 
-    for (UINTN i = 0; i < size; i++)
+    for (const auto& i : data)
     {
-        Print(W("Read Test [%d] : %c \r\n"), i, data.Data()[i]);
+        Print(W("Read Test [%c]\r\n"), i);
     }
 
 }

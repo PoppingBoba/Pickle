@@ -1,6 +1,5 @@
 /*
  *
- *
  *              type_traits.h
  * 
  * Desc: <type_traits> for Pickle framework

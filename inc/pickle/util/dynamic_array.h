@@ -5,8 +5,9 @@
 #include <efilib.h>
 
 #include <pickle/ext/Object.h>
-#include <pickle/util/type_traits.h>
 #include <pickle/util/allocator.h>
+#include <pickle/util/iterator.h>
+#include <pickle/util/type_traits.h>
 
 namespace Pickle::util
 {
@@ -93,6 +94,19 @@ public:
         val.Deallocate();
     }
 
+    // Iterator Section
+public:
+    Pickle::util::Iterator<T> begin()
+    {
+        return Pickle::util::Iterator<T>(_data);
+    }
+
+    Pickle::util::Iterator<T> end()
+    {
+        return Pickle::util::Iterator<T>(_data + _size);
+    }
+
+    // Custom Operator Section 
 public:
     template<UINTN SIZE>
     DynamicArray<T>& operator=(const T (&Arr)[SIZE])
@@ -106,6 +120,11 @@ public:
         this->Copy(val);
         val.Deallocate();
         return *this;
+    }
+
+    T& operator[](int index)
+    {
+        return _data[index];
     }
 
 public:

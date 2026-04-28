@@ -1,3 +1,12 @@
+/*
+ *
+ *              file.h
+ * 
+ * Desc: C++ Style file api for Pickle framework
+ * Author: Nakada Tokumei <nakada_tokumei@protonmail.com>
+ * 
+ */
+
 #ifndef __PICKLE_UTIL_FILE_H__
 #define __PICKLE_UTIL_FILE_H__
 
