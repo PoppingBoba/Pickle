@@ -6,6 +6,7 @@
 
 #include <pickle/ext/Object.h>
 #include <pickle/util/allocator.h>
+#include <pickle/util/compiler.h>
 #include <pickle/util/iterator.h>
 #include <pickle/util/type_traits.h>
 
@@ -29,7 +30,7 @@ public:
         if (_data)
             this->Deallocate();
 
-        status = alloc.Allocate((sizeof(T) * Size), &_data);
+        status = alloc.Allocate(Size, &_data);
         if (!EFI_ERROR(status) && 
             (status != EFI_BUFFER_TOO_SMALL))
             _size = Size;
@@ -122,9 +123,31 @@ public:
         return *this;
     }
 
+    // For null pointer checking
+    bool operator!=(Pickle::util::nullptr_t)
+    {
+        return _data != nullptr;
+    }
+
+    bool operator==(Pickle::util::nullptr_t)
+    {
+        return _data == nullptr;
+    }
+
     T& operator[](int index)
     {
         return _data[index];
+    }
+
+    // For Struct Pointer Type
+    T* operator->()
+    {
+        return _data;
+    }
+
+    const T* operator->() const
+    {
+        return _data;
     }
 
 public:

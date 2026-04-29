@@ -3,6 +3,7 @@
 #include <efilib.h>
 
 #include <pickle/pickle.h>
+#include <pickle/amoeba/elf.h>
 #include <pickle/util/file.h>
 
 extern "C"
@@ -25,7 +26,7 @@ void pickleTest(EFI_HANDLE ImageHandle)
 
     status = picklefile.Open(
         ImageHandle,
-        W("\\test.txt")
+        W("\\lk.elf")
     );
     if (EFI_ERROR(status))
     {
@@ -36,18 +37,21 @@ void pickleTest(EFI_HANDLE ImageHandle)
         Print(W("Open Success\r\n"));
     }
 
-    UINTN size = 30;
     Pickle::util::DynamicArray<UINT8> data;
 
-    status = picklefile.Read(data, size);
+    status = picklefile.Read(data);
     if (EFI_ERROR(status))
     {
         Print(W("Failed to Read File... [%r]\n"), status);
     }
 
-    for (const auto& i : data)
+    Print(W("File Size: %lu\r\n"), picklefile.Size());
+
+    Pickle::amoeba::Elf elf;
+    status = elf.LoadImage(data);
+    if (EFI_ERROR(status))
     {
-        Print(W("Read Test [%c]\r\n"), i);
+        Print(W("Failed to Load ELF Image...[%r]\r\n"), status);
     }
 
 }

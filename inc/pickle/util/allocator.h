@@ -2,9 +2,9 @@
 #define __PICKLE_UTIL_ALLOCATOR_H__
 
 #include <efi.h>
-#include <efilib.h>
-#include <efidef.h>
 #include <efibind.h>
+#include <efidef.h>
+#include <efilib.h>
 
 #include <pickle/util/type_traits.h>
 

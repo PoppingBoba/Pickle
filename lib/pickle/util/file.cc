@@ -1,5 +1,6 @@
 #include <pickle/util/file.h>
 
+#include <pickle/util/allocator.h>
 #include <pickle/util/compiler.h>
 #include <pickle/util/dynamic_array.h>
 #include <pickle/util/string.h>
@@ -63,6 +64,44 @@ done:
 }
 
 EFI_STATUS
+File::GetFileInfo(VOID)
+{
+    EFI_STATUS status = EFI_SUCCESS;
+
+    UINTN infoSize = 0;
+
+    status = _file->GetInfo(
+        _file,
+        &GenericFileInfo,
+        &infoSize,
+        nullptr
+    );
+    if (EFI_ERROR(status) && 
+        (status != EFI_BUFFER_TOO_SMALL))
+    {
+        Print(W("Failed to get GenericFileInfo size... [%r]\r\n"), status);
+        goto done;
+    }
+
+    status = _fileInfo.Allocate(infoSize);
+    if (EFI_ERROR(status))
+    {
+        Print(W("Failed to allocate FileInfo... [%r]\r\n"), status);
+        goto done;
+    }
+
+    status = _file->GetInfo(
+        _file,
+        &GenericFileInfo,
+        &infoSize,
+        _fileInfo.Data()
+    );
+
+done:
+    return status;
+}
+
+EFI_STATUS
 File::Open(
     EFI_HANDLE ImageHandle,
     const CHAR16* Path,
@@ -96,6 +135,13 @@ File::Open(
         OpenMode,
         0
     );
+    if (EFI_ERROR(status))
+    {
+        Print(W("Failed to Open File... [%r]\r\n"), status);
+        goto done;
+    }
+
+    status = this->GetFileInfo();
 
 done:
     return status;
@@ -144,6 +190,25 @@ File::Read(
     );
 
     return status;
+}
+
+EFI_STATUS
+File::Read(Pickle::util::DynamicArray<UINT8>& OutBuffer)
+{
+    EFI_STATUS status = EFI_SUCCESS;
+
+    UINTN size = this->Size();
+    status = this->Read(OutBuffer, size);
+
+    return status;
+}
+
+UINT64
+File::Size(VOID)
+{
+    return (_fileInfo != nullptr) ? 
+        reinterpret_cast<EFI_FILE_INFO*>(_fileInfo.Data())->FileSize : 
+        0;
 }
 
 };

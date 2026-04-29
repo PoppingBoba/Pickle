@@ -28,6 +28,8 @@ class File : public ::Pickle::ext::Object
     EFI_LOADED_IMAGE* _loadedImage;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* _fsp;
 
+    Pickle::util::DynamicArray<UINT8> _fileInfo;
+
     CHAR8* _fileBuf;
 
 public:
@@ -36,12 +38,16 @@ public:
 
 private:
     EFI_STATUS OpenRoot(EFI_HANDLE ImageHandle);
+    EFI_STATUS GetFileInfo(VOID);
 
 public:
     EFI_STATUS Open(EFI_HANDLE ImageHandle, const CHAR16* Path, UINT64 OpenMode = (EFI_FILE_MODE_CREATE | EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE));
     VOID Close(VOID);
 
     EFI_STATUS Read(Pickle::util::DynamicArray<UINT8>& OutBuffer, UINTN& ReadSize);
+    EFI_STATUS Read(Pickle::util::DynamicArray<UINT8>& OutBuffer);
+
+    UINT64 Size(VOID);
 
     PickleDeclareCtorAndDtor(File)
 };
