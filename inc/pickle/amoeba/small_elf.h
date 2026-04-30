@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+#define PAGE_SIZE 4096UL
+#define PAGE_MASK (~(PAGE_SIZE - 1))
+
+#define ALIGN_UP(X, A)      ((X + (A-1)) & ~(A - 1))
+#define ALIGN_DOWN(X, A)    (X & ~(A - 1))
+
 #define EI_NIDENT   12
 
 #define EI_MAG0     0

@@ -19,9 +19,6 @@ void pickleTest(EFI_HANDLE ImageHandle)
 {
     EFI_STATUS status = EFI_SUCCESS;
 
-    // VOID* Data;
-    // UINTN DataSize;
-
     Pickle::util::File picklefile;
 
     status = picklefile.Open(
