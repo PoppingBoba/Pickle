@@ -4,7 +4,6 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include <pickle/ext/Object.h>
 #include <pickle/util/allocator.h>
 #include <pickle/util/compiler.h>
 #include <pickle/util/iterator.h>
@@ -16,7 +15,7 @@ namespace Pickle::util
 // Class Type doesn't accept now...
 template<typename T>
     requires(!::Pickle::util::is_class_v<T>)
-class DynamicArray : public ::Pickle::ext::Object
+class DynamicArray
 {
     T* _data;
     UINTN _size;
@@ -151,21 +150,19 @@ public:
     }
 
 public:
-    void Initialize() override
+    DynamicArray()
     {
         _data = nullptr;
         _size = 0;
     }
 
-    void Uninitialize() override
+    ~DynamicArray()
     {
         if (_data)
         {
             this->Deallocate();
         }
     }
-
-    PickleDeclareCtorAndDtor(DynamicArray);
 };
 
 };

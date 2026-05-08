@@ -4,14 +4,13 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include <pickle/ext/Object.h>
 #include <pickle/util/dynamic_array.h>
 
 namespace Pickle::util
 {
 
 template<typename T>
-class String : ::Pickle::ext::Object
+class String
 {
     Pickle::util::DynamicArray<T> _data;
 
@@ -41,15 +40,8 @@ public:
     }
 
 public:
-    void Initialize() override
-    {
-    }
-
-    void Uninitialize() override
-    {
-    }
-
-    PickleDeclareCtorAndDtor(String);
+    String() { };
+    ~String() { };
 };
 
 class String16 : public String<CHAR16>

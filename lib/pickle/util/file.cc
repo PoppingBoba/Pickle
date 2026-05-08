@@ -8,7 +8,7 @@
 namespace Pickle::util
 {
 
-void File::Initialize()
+File::File()
 {
     _root = nullptr;
     _file = nullptr;
@@ -18,7 +18,7 @@ void File::Initialize()
     _fileBuf = nullptr;
 }
 
-void File::Uninitialize()
+File::~File()
 {
     this->Close();
 }

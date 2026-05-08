@@ -8,6 +8,7 @@
 
 #define ALIGN_UP(X, A)      ((X + (A-1)) & ~(A - 1))
 #define ALIGN_DOWN(X, A)    (X & ~(A - 1))
+#define SIZE_TO_PAGES(X)    ((X + PAGE_SIZE - 1) / PAGE_SIZE)
 
 #define EI_NIDENT   12
 

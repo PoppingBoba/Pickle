@@ -6,6 +6,7 @@
 #include <efidef.h>
 #include <efilib.h>
 
+#include <pickle/util/result.h>
 #include <pickle/util/type_traits.h>
 
 namespace Pickle::util

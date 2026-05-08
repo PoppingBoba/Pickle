@@ -13,13 +13,12 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include <pickle/ext/Object.h>
 #include <pickle/util/dynamic_array.h>
 
 namespace Pickle::util
 {
 
-class File : public ::Pickle::ext::Object
+class File
 {
     // Root Voulume
     EFI_FILE_PROTOCOL* _root;
@@ -33,8 +32,8 @@ class File : public ::Pickle::ext::Object
     CHAR8* _fileBuf;
 
 public:
-    void Initialize() override;
-    void Uninitialize() override;
+    File();
+    ~File();
 
 private:
     EFI_STATUS OpenRoot(EFI_HANDLE ImageHandle);
@@ -48,8 +47,6 @@ public:
     EFI_STATUS Read(Pickle::util::DynamicArray<UINT8>& OutBuffer);
 
     UINT64 Size(VOID);
-
-    PickleDeclareCtorAndDtor(File)
 };
 
 };

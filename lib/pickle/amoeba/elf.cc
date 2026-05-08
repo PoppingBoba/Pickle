@@ -1,9 +1,27 @@
 #include <pickle/amoeba/elf.h>
 
+#include <efidef.h>
+
 #include <pickle/util/compiler.h>
 
 namespace Pickle::amoeba
 {
+
+Elf::Elf()
+{
+    _ehdr = nullptr;
+    _phdr = nullptr;
+
+    _loadBaseAddr = 0;
+}
+
+Elf::~Elf()
+{
+    _loadBaseAddr = 0;
+
+    _phdr = nullptr;
+    _ehdr = nullptr;
+}
 
 EFI_STATUS Elf::ValidateElf(UINTN elfSize)
 {
@@ -88,13 +106,15 @@ EFI_STATUS Elf::FindLOADSegment(ElfSegmentInfo& segInfo)
 
 EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
 {
-    EFI_STATUS ret = EFI_SUCCESS;
+    EFI_STATUS status = EFI_SUCCESS;
+
+    UINTN pages = 0;
     ElfSegmentInfo segInfo = { SEGMENT_INFO_DEFAULT_START_ADDR, SEGMENT_INFO_DEFAULT_END_ADDR };
 
     _ehdr = reinterpret_cast<Elf64_Ehdr*>(Image.Data());
 
-    ret = this->ValidateElf(Image.Size());
-    if (EFI_ERROR(ret))
+    status = this->ValidateElf(Image.Size());
+    if (EFI_ERROR(status))
     {
         Print(W("Failed to validate ELF File...\r\n"));
         goto done;
@@ -102,15 +122,24 @@ EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
 
     _phdr = reinterpret_cast<Elf64_Phdr*>(Image.Data() + _ehdr->e_phoff);
 
-    ret = this->FindLOADSegment(segInfo);
-    if (EFI_ERROR(ret))
+    status = this->FindLOADSegment(segInfo);
+    if (EFI_ERROR(status))
     {
         Print(W("Failed to find Load Segment...\r\n"));
         goto done;
     }
 
+    pages = SIZE_TO_PAGES(segInfo.endAddr - segInfo.startAddr);
+
+    status = BS->AllocatePages(
+        AllocateAddress,
+        EfiLoaderCode,
+        pages,
+        &_loadBaseAddr
+    );
+
 done:
-    return ret;
+    return status;
 }
 
 };

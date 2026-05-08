@@ -4,7 +4,6 @@
 #include <efi.h>
 
 #include <pickle/amoeba/small_elf.h>
-#include <pickle/ext/Object.h>
 #include <pickle/util/dynamic_array.h>
 
 #define SEGMENT_INFO_DEFAULT_START_ADDR (~0ULL)
@@ -19,10 +18,12 @@ struct ElfSegmentInfo
     EFI_PHYSICAL_ADDRESS endAddr;
 };
 
-class Elf : public Pickle::ext::Object
+class Elf
 {
     Elf64_Ehdr* _ehdr;
     Elf64_Phdr* _phdr;
+
+    EFI_PHYSICAL_ADDRESS _loadBaseAddr;
 
 private:
     EFI_STATUS ValidateElf(UINTN elfSize);
@@ -32,19 +33,8 @@ public:
     EFI_STATUS LoadImage(Pickle::util::DynamicArray<UINT8>& Image);
 
 public:
-    void Initialize() override
-    {
-        _ehdr = nullptr;
-        _phdr = nullptr;
-    }
-
-    void Uninitialize() override
-    {
-        _phdr = nullptr;
-        _ehdr = nullptr;
-    }
-
-    PickleDeclareCtorAndDtor(Elf);
+    Elf();
+    ~Elf();
 };
 
 };
