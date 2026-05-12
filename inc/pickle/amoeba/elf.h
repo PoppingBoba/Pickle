@@ -24,13 +24,17 @@ class Elf
     Elf64_Phdr* _phdr;
 
     EFI_PHYSICAL_ADDRESS _loadBaseAddr;
+    UINTN _loadBasePages;
 
 private:
     EFI_STATUS ValidateElf(UINTN elfSize);
     EFI_STATUS FindLOADSegment(ElfSegmentInfo& segInfo);
 
 public:
-    EFI_STATUS LoadImage(Pickle::util::DynamicArray<UINT8>& Image);
+    EFI_STATUS LoadImage(
+        Pickle::util::DynamicArray<UINT8>& Image,
+        EFI_PHYSICAL_ADDRESS& outEntry
+    );
 
 public:
     Elf();

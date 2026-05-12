@@ -12,9 +12,16 @@
 namespace Pickle::util
 {
 
+enum class AllocationType
+{
+    NormalPool,
+    PagePool
+};
+
 // Pool Memory Allocator
 // Not works with class initiator
-template<typename T, EFI_MEMORY_TYPE MEM_TYPE = EfiLoaderData>
+template<typename T, 
+        EFI_MEMORY_TYPE MEM_TYPE = EfiLoaderData>
     requires (!is_class_v<T>)
 struct PoolAllocator
 {

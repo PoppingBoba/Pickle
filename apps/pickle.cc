@@ -15,6 +15,8 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable);
 
 };
 
+typedef VOID (*lk_entry_t)();
+
 void pickleTest(EFI_HANDLE ImageHandle)
 {
     EFI_STATUS status = EFI_SUCCESS;
@@ -44,11 +46,19 @@ void pickleTest(EFI_HANDLE ImageHandle)
 
     Print(W("File Size: %lu\r\n"), picklefile.Size());
 
+    EFI_PHYSICAL_ADDRESS entryAddr;
     Pickle::amoeba::Elf elf;
-    status = elf.LoadImage(data);
+    status = elf.LoadImage(data, entryAddr);
     if (EFI_ERROR(status))
     {
         Print(W("Failed to Load ELF Image...[%r]\r\n"), status);
+    }
+
+    auto lkEntry = reinterpret_cast<lk_entry_t>(entryAddr);
+    lkEntry();
+    for (;;) 
+    {
+        __asm__ __volatile__("hlt");
     }
 
 }
@@ -62,6 +72,8 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable)
     Print(W("Hello from Pickle!\r\n"));
 
     pickleTest(ImageHandle);
+
+    Print(W("Bye from Pickle!\r\n"));
 
     return EFI_SUCCESS;
 }

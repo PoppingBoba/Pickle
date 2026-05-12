@@ -2,6 +2,7 @@
 
 #include <efidef.h>
 
+#include <pickle/util/allocator.h>
 #include <pickle/util/compiler.h>
 
 namespace Pickle::amoeba
@@ -13,10 +14,12 @@ Elf::Elf()
     _phdr = nullptr;
 
     _loadBaseAddr = 0;
+    _loadBasePages = 0;
 }
 
 Elf::~Elf()
 {
+    _loadBasePages = 0;
     _loadBaseAddr = 0;
 
     _phdr = nullptr;
@@ -101,10 +104,15 @@ EFI_STATUS Elf::FindLOADSegment(ElfSegmentInfo& segInfo)
         status = EFI_LOAD_ERROR;
     }
 
+    _loadBaseAddr = segInfo.startAddr;
+
     return status;
 }
 
-EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
+EFI_STATUS Elf::LoadImage(
+    Pickle::util::DynamicArray<UINT8>& Image,
+    EFI_PHYSICAL_ADDRESS& outEntry
+)
 {
     EFI_STATUS status = EFI_SUCCESS;
 
@@ -117,7 +125,7 @@ EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
     if (EFI_ERROR(status))
     {
         Print(W("Failed to validate ELF File...\r\n"));
-        goto done;
+        goto load_image_fail;
     }
 
     _phdr = reinterpret_cast<Elf64_Phdr*>(Image.Data() + _ehdr->e_phoff);
@@ -126,7 +134,7 @@ EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
     if (EFI_ERROR(status))
     {
         Print(W("Failed to find Load Segment...\r\n"));
-        goto done;
+        goto load_image_fail;
     }
 
     pages = SIZE_TO_PAGES(segInfo.endAddr - segInfo.startAddr);
@@ -138,7 +146,66 @@ EFI_STATUS Elf::LoadImage(Pickle::util::DynamicArray<UINT8>& Image)
         &_loadBaseAddr
     );
 
-done:
+    if (EFI_ERROR(status))
+    {
+        Print(W("Failed to Allocate Page....[Addr: 0x%lx Error: %r]\r\n"), _loadBaseAddr, status);
+        goto load_image_fail;
+    }
+
+    BS->SetMem(
+        reinterpret_cast<VOID*>(segInfo.startAddr),
+        (segInfo.endAddr - segInfo.startAddr),
+        0
+    );
+
+    for (UINTN i = 0; i < _ehdr->e_phnum; i++)
+    {
+        Elf64_Phdr *p = reinterpret_cast<Elf64_Phdr*>(reinterpret_cast<UINT8*>(_phdr + i * _ehdr->e_phentsize));
+
+        if (p->p_type != PT_LOAD)
+            continue;
+
+        if (p->p_offset + p->p_filesz > Image.Size())
+        {
+            Print(W("Invalid PT_LOAD file range...\r\n"));
+            status = EFI_LOAD_ERROR;
+            goto load_image_fail;
+        }
+
+        CopyMem(
+            reinterpret_cast<VOID*>(p->p_paddr),
+            (Image.Data() + p->p_offset),
+            p->p_filesz
+        );
+    }
+
+    outEntry = _ehdr->e_entry;
+
+    for (UINTN i = 0; i < _ehdr->e_phnum; i++)
+    {
+        auto *p = reinterpret_cast<Elf64_Phdr*>(reinterpret_cast<UINT8*>(_phdr) + i * _ehdr->e_phentsize);
+
+        if (p->p_type != PT_LOAD)
+            continue;
+
+        if ((_ehdr->e_entry >= p->p_vaddr) &&
+            (_ehdr->e_entry < p->p_vaddr + p->p_memsz))
+        {
+            outEntry = p->p_paddr + (_ehdr->e_entry - p->p_vaddr);
+            break;
+        }
+    }
+
+    Print(W("LK.elf Loaded: 0x%lx - 0x%lx, entry=0x%lx\r\n"), segInfo.startAddr, segInfo.endAddr, outEntry);
+
+    return status;
+
+load_image_fail:
+    if (_loadBaseAddr)
+    {
+        BS->FreePages(_loadBaseAddr, pages);
+    }
+
     return status;
 }
 
